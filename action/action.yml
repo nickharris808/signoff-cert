@@ -1,0 +1,116 @@
+name: 'Verify signoff certificates'
+description: >-
+  Verify every signoff-cert/v1 certificate in the repository and write a job summary carrying
+  each one's false-pass bound and scope. Reports; does not deploy or gate.
+branding:
+  icon: 'check-circle'
+  color: 'blue'
+
+inputs:
+  path:
+    description: 'Glob for certificates to verify'
+    required: false
+    default: '**/*.cert.json'
+  hmac-key:
+    description: >-
+      Shared HMAC key. Without it certificates are checked for INTEGRITY but are not
+      AUTHENTICATED, and the action says so rather than implying otherwise.
+    required: false
+  pinned-pubkey:
+    description: 'Out-of-band Ed25519 operator public key (hex) for the authority path'
+    required: false
+  allow-unauthenticated:
+    description: 'Check integrity only. The result is not attributable to anyone.'
+    required: false
+    default: 'false'
+  fail-on-invalid:
+    description: >-
+      Fail the job when a certificate does not verify. Default true. Setting this false still
+      writes the summary -- it just does not fail the build.
+    required: false
+    default: 'true'
+
+outputs:
+  verified:
+    description: 'Number of certificates that verified'
+    value: ${{ steps.run.outputs.verified }}
+  failed:
+    description: 'Number that did not'
+    value: ${{ steps.run.outputs.failed }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # Installed from the public GitHub repo, NOT from PyPI. `pip install signoff-cert`
+    # is a 404 today -- nothing is published to any index -- so an action that depended on
+    # it would fail on a stranger's very first run. Git is a first-class pip source and
+    # needs no token, so this works as-is right now. Pinned to a tag rather than a moving
+    # branch: a verifier whose own version drifts under you is not a verifier.
+    - name: Install signoff-cert
+      shell: bash
+      run: |
+        python -m pip install --quiet \
+          "signoff-cert @ git+https://github.com/nickharris808/signoff-cert@v1.0.0"
+
+    - name: Verify certificates
+      id: run
+      shell: bash
+      env:
+        SIGNOFF_HMAC_KEY: ${{ inputs.hmac-key }}
+      run: |
+        set -uo pipefail
+        shopt -s globstar nullglob
+        certs=( ${{ inputs.path }} )
+        if [ ${#certs[@]} -eq 0 ]; then
+          echo "No certificates matched '${{ inputs.path }}'." >> "$GITHUB_STEP_SUMMARY"
+          echo "verified=0" >> "$GITHUB_OUTPUT"; echo "failed=0" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        args=()
+        [ -n "${SIGNOFF_HMAC_KEY:-}" ] && args+=(--hmac-key-env SIGNOFF_HMAC_KEY)
+        [ -n "${{ inputs.pinned-pubkey }}" ] && args+=(--pinned-pubkey "${{ inputs.pinned-pubkey }}")
+        [ "${{ inputs.allow-unauthenticated }}" = "true" ] && args+=(--allow-unauthenticated)
+
+        {
+          echo "## signoff-cert"
+          echo ""
+          echo "| certificate | verdict | trust | false-pass bound | scope |"
+          echo "|---|---|---|---|---|"
+        } >> "$GITHUB_STEP_SUMMARY"
+
+        ok=0; bad=0
+        for c in "${certs[@]}"; do
+          if out=$(signoff-cert verify "$c" "${args[@]}" --json 2>&1); then ok=$((ok+1)); else bad=$((bad+1)); fi
+          python - "$c" <<'PY' >> "$GITHUB_STEP_SUMMARY"
+        import json, sys
+        p = sys.argv[1]
+        try:
+            c = json.load(open(p))
+            conf = c.get("confidence") or {}
+            b, t = conf.get("false_pass_bound"), conf.get("bound_type")
+            bound = "n/a" if b is None else f"{b:g} ({t})"
+            print(f"| `{p}` | {c.get('verdict','?')} | - | {bound} | {conf.get('scope','(none)')} |")
+        except Exception as e:
+            print(f"| `{p}` | UNREADABLE | - | - | {e} |")
+        PY
+        done
+
+        {
+          echo ""
+          echo "**${ok} verified, ${bad} failed.**"
+          if [ -z "${SIGNOFF_HMAC_KEY:-}" ] && [ -z "${{ inputs.pinned-pubkey }}" ]; then
+            echo ""
+            echo "> No key supplied: these certificates were checked for **integrity**, not"
+            echo "> **authenticity**. They are tamper-evident but not attributable to any signer."
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
+
+        echo "verified=$ok" >> "$GITHUB_OUTPUT"
+        echo "failed=$bad" >> "$GITHUB_OUTPUT"
+        if [ "$bad" -gt 0 ] && [ "${{ inputs.fail-on-invalid }}" = "true" ]; then exit 1; fi

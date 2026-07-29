@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signoff-cert.org/schema/signoff-cert-v1.schema.json",
+  "title": "signoff-cert/v1",
+  "description": "A signoff certificate: a fail-closed gate's verdict on a subject artifact, carrying its own false-pass bound and the honest scope of that bound as REQUIRED machine-readable fields.",
+  "type": "object",
+  "required": [
+    "schema",
+    "domain",
+    "subject",
+    "claim",
+    "verdict",
+    "gate",
+    "confidence",
+    "digests"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema": {
+      "const": "signoff-cert/v1"
+    },
+    "domain": {
+      "enum": [
+        "litho",
+        "em-signoff",
+        "zk-hw",
+        "code-rewrite",
+        "wifi-pqc",
+        "telecom",
+        "kv-isolation"
+      ]
+    },
+    "subject": {
+      "type": "object",
+      "required": [
+        "id",
+        "artifact_digests"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "artifact_digests": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "required": [
+        "property"
+      ],
+      "properties": {
+        "property": {
+          "type": "string"
+        },
+        "predicate": {
+          "type": "object"
+        }
+      }
+    },
+    "verdict": {
+      "enum": [
+        "ADMITTED",
+        "REJECTED",
+        "REFUSED"
+      ],
+      "description": "Tri-state. REFUSED is the fail-closed default and is NOT a synonym for REJECTED."
+    },
+    "gate": {
+      "type": "object",
+      "required": [
+        "name",
+        "provenance",
+        "legs"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "provenance": {
+          "type": "string"
+        },
+        "legs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "required": [
+        "method",
+        "false_pass_bound",
+        "bound_type"
+      ],
+      "description": "The differentiating block. bound_type is REQUIRED so the number is never mistaken for something it is not.",
+      "properties": {
+        "method": {
+          "enum": [
+            "clopper-pearson",
+            "anytime",
+            "betting-cs",
+            "split-conformal-band",
+            "conformal-risk-control",
+            "rcps",
+            "learn-then-test",
+            "empirical-bernstein",
+            "exhaustive-model-count",
+            "impossibility-floor",
+            "evt-tail"
+          ]
+        },
+        "false_pass_bound": {
+          "type": "number",
+          "description": "Machine-readable bound. Its MEANING is given by bound_type; it is not always a rate."
+        },
+        "bound_type": {
+          "enum": [
+            "false_pass_rate_upper",
+            "miscoverage_upper",
+            "risk_upper",
+            "mean_lower",
+            "uncertifiable_at_n",
+            "tail_probability_upper"
+          ]
+        },
+        "coverage_level": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "ci": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "n_samples": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "delta": {
+          "type": "number"
+        },
+        "machine_checked": {
+          "type": "boolean",
+          "description": "true ONLY when coverage is a machine-checked theorem, never merely a cited one."
+        },
+        "paper": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string",
+          "description": "The honest scope of the bound, verbatim from the source. A bound without a population is not a bound."
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "description": "Whatever a verifier needs to RECOMPUTE the bound (e.g. k, n, enumerated, state_space)."
+    },
+    "honesty": {
+      "type": "object",
+      "properties": {
+        "proven": {
+          "type": "array"
+        },
+        "simulated": {
+          "type": "array"
+        },
+        "aspirational": {
+          "type": "array"
+        },
+        "non_claims": {
+          "type": "array"
+        }
+      }
+    },
+    "digests": {
+      "type": "object",
+      "required": [
+        "semantic_sha256",
+        "record_sha256"
+      ],
+      "properties": {
+        "semantic_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "record_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "required": [
+        "alg",
+        "key_id",
+        "sig"
+      ],
+      "properties": {
+        "alg": {
+          "enum": [
+            "HMAC-SHA256",
+            "Ed25519"
+          ]
+        },
+        "key_id": {
+          "type": "string"
+        },
+        "sig": {
+          "type": "string"
+        },
+        "pubkey": {
+          "type": "string"
+        }
+      }
+    },
+    "attestation": {
+      "type": "object"
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "git_commit": {
+          "type": "string"
+        },
+        "sealed_utc": {
+          "type": "string"
+        },
+        "ots_anchor": {
+          "type": "object"
+        },
+        "ctlog_leaf": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

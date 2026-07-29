@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signoff-cert"
+version = "1.0.0"
+description = "Reference verifier for signoff-cert/v1 — a certificate that carries its own false-pass bound"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+keywords = ["certificate", "attestation", "verification", "ci", "supply-chain", "confidence-bound"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = []          # the integrity path is dependency-free, on purpose
+
+[project.optional-dependencies]
+# ONLY the Ed25519 authority path needs this. Integrity verification never does.
+crypto = ["cryptography>=41"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+signoff-cert = "signoff_cert.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+signoff_cert = ["py.typed"]
+
+[tool.cold_install]
+# Run OUT OF TREE after install: proves the wheel carries the package data this tool
+# needs, which `--help` cannot show.
+smoke = ["conform"]

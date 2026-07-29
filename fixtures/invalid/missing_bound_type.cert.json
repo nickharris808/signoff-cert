@@ -1,0 +1,53 @@
+{
+  "claim": {
+    "property": "no cross-tenant cache reuse on a byte-identical prefix"
+  },
+  "confidence": {
+    "coverage_level": 0.95,
+    "false_pass_bound": 0.02951304959181542,
+    "machine_checked": false,
+    "method": "clopper-pearson",
+    "n_samples": 100,
+    "paper": "Clopper-Pearson 1934",
+    "scope": "one engine build, one GPU class; static co-batching only"
+  },
+  "digests": {
+    "record_sha256": "effe2613762c15d36bba2649026c10f5583a9de03e0997a68c6907f796934c6d",
+    "semantic_sha256": "c407354e7f113ae71a7351aad0524f14945bdfa5ec14264487519f0528dfbdc1"
+  },
+  "domain": "kv-isolation",
+  "evidence": {
+    "k": 0,
+    "n": 100
+  },
+  "gate": {
+    "legs": {
+      "partition_bound": true,
+      "salt_present": true
+    },
+    "name": "demo-gate",
+    "provenance": "conformance corpus"
+  },
+  "honesty": {
+    "aspirational": [],
+    "non_claims": [
+      "does not measure throughput",
+      "no claim about any commercial provider"
+    ],
+    "proven": [],
+    "simulated": []
+  },
+  "schema": "signoff-cert/v1",
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "key_id": "conformance",
+    "sig": "88cd53cde70bc757a340d1ca88aaa8290dd34eaa77b8393f51ca6fa1b410dedf"
+  },
+  "subject": {
+    "artifact_digests": {
+      "config": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "id": "demo-subject"
+  },
+  "verdict": "ADMITTED"
+}

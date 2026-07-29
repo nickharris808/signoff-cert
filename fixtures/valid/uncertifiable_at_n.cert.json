@@ -1,0 +1,52 @@
+{
+  "claim": {
+    "property": "no cross-tenant cache reuse on a byte-identical prefix"
+  },
+  "confidence": {
+    "bound_type": "uncertifiable_at_n",
+    "coverage_level": 0.95,
+    "false_pass_bound": 1.0,
+    "machine_checked": false,
+    "method": "impossibility-floor",
+    "n_samples": 12,
+    "paper": "capacity/query lower bound",
+    "scope": "one engine build, one GPU class; static co-batching only"
+  },
+  "digests": {
+    "record_sha256": "1fd06d9746744664eeb6346da122a1cd539773d6c0bc3aef0797cb345c710d4b",
+    "semantic_sha256": "c407354e7f113ae71a7351aad0524f14945bdfa5ec14264487519f0528dfbdc1"
+  },
+  "domain": "kv-isolation",
+  "evidence": {
+    "n": 12
+  },
+  "gate": {
+    "legs": {
+      "sample_size_sufficient": false
+    },
+    "name": "demo-gate",
+    "provenance": "conformance corpus"
+  },
+  "honesty": {
+    "aspirational": [],
+    "non_claims": [
+      "does not measure throughput",
+      "no claim about any commercial provider"
+    ],
+    "proven": [],
+    "simulated": []
+  },
+  "schema": "signoff-cert/v1",
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "key_id": "conformance",
+    "sig": "1ffa1c0b015577c4b8fdb1c5b742398a16c6d16d8d6b0b7f70f150277b595c1d"
+  },
+  "subject": {
+    "artifact_digests": {
+      "config": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "id": "demo-subject"
+  },
+  "verdict": "REFUSED"
+}
