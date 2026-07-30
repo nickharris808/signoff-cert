@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "signoff-cert"
-version = "1.0.0"
+version = "1.0.1"
 description = "Reference verifier for signoff-cert/v1 — a certificate that carries its own false-pass bound"
 readme = "README.md"
 requires-python = ">=3.9"

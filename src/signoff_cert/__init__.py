@@ -13,7 +13,7 @@ See CLAIMS-MAP.md for the line and why it matters.
 """
 from __future__ import annotations
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 from .bounds import clopper_pearson_upper, describe_bound, recompute, zero_observed_ceiling
 from .canonical import canonical_bytes, content_sha256, semantic_sha256, sha256_hex

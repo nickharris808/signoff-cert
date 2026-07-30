@@ -13,9 +13,13 @@ over what population, does not validate.
 This package is the **reference reader**: a dependency-free verifier, a JSON Schema, and a
 16-case conformance corpus that any third-party implementation can be checked against.
 
+**Not yet on PyPI.** The command below is the one that works today. It installs from this repository, pinned to a tag.
+
 ```bash
-pip install signoff-cert
+pip install "git+https://github.com/nickharris808/signoff-cert@v1.0.1"
 ```
+
+`pip install signoff-cert` is the intended command once the name is published. **It 404s today**, which is why it is not the first step above. The tag is pinned rather than `@main` so a reader installs the exact code this README documents.
 
 ## Why a bound is a required field
 
@@ -39,6 +43,13 @@ catastrophic if you mistake it for a rate. A verifier that compares across bound
 worse than one that reports nothing.
 
 ## Install
+
+> **Not yet on PyPI.** `pip install signoff-cert` is the intended install once published;
+> until then install from the repository — it works exactly the same:
+>
+> ```
+> pip install git+https://github.com/nickharris808/signoff-cert@main
+> ```
 
 ```bash
 pip install signoff-cert            # integrity path: zero dependencies
